@@ -1,1 +1,84 @@
-PARTICIPANTS: use this file for creating the class diagram in mastery task 01
+@startuml
+
+class GetBookActivity {
+-RecommendationsServiceClient: recommendationServiceClient
+-CatalogDao: catalogDao
+
++execute(GetBookRequest): GetBookResponse
+}
+
+class GetPublishingStatusActivity {
+
++execute(GetPublishingStatusRequest): GetPublishingStatusResponse
+}
+
+class RemoveBookFromCatalogActivity {
++execute(RemoveBookFromCatalogRequest): RemoveBookFromCatalogResponse
+}
+
+class SubmitBookForPublishingActivity {
+
++execute(SubmitBookForPublishingRequest) : SubmitBookForPublishingResponse
+}
+
+class RecommendationsServiceClient {
+
++getBookRecommendations(BookGenre) : List<BookRecommendation>
+}
+
+class CatalogDao {
+
+-dynamoDbMapper: DynamoDBMapper
+
++getBookFromCatalog(bookId: String) : CatalogItemVersion
+
++getLatestVersionOfBook(bookId: String) : CatalogItemVersion
+}
+
+class PublishingStatusDao {
+
+-dynamoDbMapper: DynamoDBMapper
+
++setPublishingStatus(publishingRecordId: String,
+                    publishingRecordStatus: PublishingRecordStatus
+                    bookId: String) : PublishingStatusItem
+
++setPublishingStatus(publishingRecordId: String
+                    PublishingRecordStatus,
+                    bookId: String, message: String) : PublishingStatusItem
+}
+
+class CatalogItemVersion {
+@DynamoDBHashKey bookId: String
+@DynamoDBRangeKey version: int
+inactive: boolean
+String: title
+author: String
+text: String
+genre: BookGenre
+
+}
+
+class PublishingStatusItem {
+@DynamoDBHashKey publishingRecordId: String
+@DynamoDBRangeKey status: PublishingRecordStatus
+statusMessage: String
+bookId: String
+
+}
+
+class BookNotFoundException {
+}
+
+class PublishingStatusNotFoundException {
+}
+
+CatalogItemVersion --* CatalogDao
+PublishingStatusItem --* PublishingStatusDao
+BookNotFoundException --* CatalogDao
+GetBookActivity *-- CatalogDao
+GetPublishingStatusActivity *-- CatalogDao
+SubmitBookForPublishingActivity *-- PublishingStatusDao
+GetBookActivity *-- RecommendationsServiceClient
+
+@enduml
