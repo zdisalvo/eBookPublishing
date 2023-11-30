@@ -5,11 +5,14 @@ import com.amazon.ata.kindlepublishingservice.exceptions.BookNotFoundException;
 import com.amazon.ata.kindlepublishingservice.publishing.KindleFormattedBook;
 import com.amazon.ata.kindlepublishingservice.utils.KindlePublishingUtils;
 
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBDeleteExpression;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 import javax.inject.Inject;
 
 public class CatalogDao {
@@ -57,5 +60,53 @@ public class CatalogDao {
             return null;
         }
         return results.get(0);
+    }
+
+    public CatalogItemVersion removeBookFromCatalog(String bookId) {
+        CatalogItemVersion book = new CatalogItemVersion();
+        book.setBookId(bookId);
+
+        DynamoDBQueryExpression<CatalogItemVersion> queryExpression = new DynamoDBQueryExpression()
+                .withHashKeyValues(book)
+                .withLimit(10);
+
+        List<CatalogItemVersion> results = new ArrayList<>();
+        List<CatalogItemVersion> queryResults = dynamoDbMapper.query(CatalogItemVersion.class, queryExpression);
+
+        for (CatalogItemVersion item : queryResults) {
+            results.add(item);
+        }
+
+        if (results.isEmpty()) {
+            throw new BookNotFoundException("This book is inactive or does not exist");
+        }
+
+
+
+        ListIterator<CatalogItemVersion> listIterator = results.listIterator();
+
+        while(listIterator.hasNext()) {
+            CatalogItemVersion item = listIterator.next();
+            if (!listIterator.hasNext()) {
+                if (item.isInactive()) {
+                    throw new BookNotFoundException("This book is inactive");
+                } else {
+                    item.setInactive(true);
+                    dynamoDbMapper.save(item);
+                }
+            }
+        }
+
+//        while(resu)
+//            if (catalogItemVersion.isInactive()) {
+//                throw new BookNotFoundException("This book is inactive");
+//            } else {
+//                catalogItemVersion.setInactive(true);
+//                dynamoDbMapper.save(catalogItemVersion);
+//            }
+//        }
+
+
+        return results.get(results.size() - 1);
     }
 }

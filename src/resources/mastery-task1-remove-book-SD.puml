@@ -1,1 +1,22 @@
-PARTICIPANTS: use this file for creating the remove book from catalog diagram in mastery task 01
+@startuml
+
+actor Client
+participant "API Gateway" as APIGateway
+participant RemoveBookFromCatalogActivity
+participant RemoveBookFromCatalogRequest
+participant CatalogDao
+participant RemoveBookFromCatalogResponse
+database DynamoDB
+
+
+Client -> APIGateway : DELETE
+activate Client
+APIGateway -> RemoveBookFromCatalogActivity : execute(RemoveBookFromCatalogRequest)
+RemoveBookFromCatalogActivity -> CatalogDao: RemoveBookFromCatalogResponse
+CatalogDao -> DynamoDB : removeBookFromCatalog
+
+alt if book not found by ID
+    CatalogDao <-- DynamoDB : BookNotFoundException
+
+
+@enduml
