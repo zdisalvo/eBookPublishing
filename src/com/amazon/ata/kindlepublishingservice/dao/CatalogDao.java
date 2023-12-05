@@ -46,7 +46,7 @@ public class CatalogDao {
     }
 
     // Returns null if no version exists for the provided bookId
-    private CatalogItemVersion getLatestVersionOfBook(String bookId) {
+    public CatalogItemVersion getLatestVersionOfBook(String bookId) {
         CatalogItemVersion book = new CatalogItemVersion();
         book.setBookId(bookId);
 
@@ -108,5 +108,21 @@ public class CatalogDao {
 
 
         return results.get(results.size() - 1);
+    }
+
+    public boolean validateBookExists(String bookId) {
+        CatalogItemVersion book = new CatalogItemVersion();
+        book.setBookId(bookId);
+
+        DynamoDBQueryExpression<CatalogItemVersion> queryExpression = new DynamoDBQueryExpression()
+                .withHashKeyValues(book)
+                .withScanIndexForward(false)
+                .withLimit(1);
+
+        List<CatalogItemVersion> results = dynamoDbMapper.query(CatalogItemVersion.class, queryExpression);
+        if (results.isEmpty()) {
+            return false;
+        }
+        return true;
     }
 }

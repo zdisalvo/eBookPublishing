@@ -59,7 +59,11 @@ public class SubmitBookForPublishingActivity {
             try {
                 catalogDao.getBookFromCatalog(request.getBookId());
             } catch (BookNotFoundException e) {
-                throw new BookNotFoundException("This book is not in the catalog");
+
+                if (!catalogDao.validateBookExists(request.getBookId())) {
+                    throw new BookNotFoundException("This book is not in the catalog");
+                }
+
             }
         }
 
