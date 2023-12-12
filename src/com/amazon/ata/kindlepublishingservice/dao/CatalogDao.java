@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.UUID;
 import javax.inject.Inject;
 
 public class CatalogDao {
@@ -60,6 +61,38 @@ public class CatalogDao {
             return null;
         }
         return results.get(0);
+    }
+
+    /**
+     * Marks the current book version inactive and creates an incremented
+     * latest version of the same book
+     * @param bookId
+     * @return
+     */
+    public CatalogItemVersion updateLatestVersionOfBook(String bookId) {
+        CatalogItemVersion catalogItemVersion = new CatalogItemVersion();
+        catalogItemVersion.setBookId(bookId);
+
+        DynamoDBQueryExpression<CatalogItemVersion> queryExpression =
+                new DynamoDBQueryExpression<CatalogItemVersion>()
+                        .withHashKeyValues(catalogItemVersion)
+                        .withScanIndexForward(false)
+                        .withLimit(1);
+
+        List<CatalogItemVersion> results = dynamoDbMapper.query(CatalogItemVersion.class, queryExpression);
+
+        //sets the previous version to inactive
+        catalogItemVersion = results.get(0);
+        results.get(0).setInactive(true);
+        dynamoDbMapper.save(catalogItemVersion);
+
+        //increments the latest version of the book
+        catalogItemVersion.setVersion(results.get(0).getVersion() + 1);
+        catalogItemVersion.setInactive(false);
+        dynamoDbMapper.save(catalogItemVersion);
+
+        return catalogItemVersion;
+
     }
 
     public CatalogItemVersion removeBookFromCatalog(String bookId) {
@@ -124,5 +157,14 @@ public class CatalogDao {
             return false;
         }
         return true;
+    }
+
+    public String createBookId() {
+        return "book." + UUID.randomUUID().toString();
+    }
+
+    public CatalogItemVersion addCatalogItemVersion(CatalogItemVersion catalogItemVersion) {
+        dynamoDbMapper.save(catalogItemVersion);
+        return catalogItemVersion;
     }
 }

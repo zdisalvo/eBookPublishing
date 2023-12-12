@@ -38,7 +38,7 @@ public class MasteryTaskFourSubmitBookForPublishingTests extends IntegrationTest
         try {
             publishingManager.start();
         } catch (Exception e) {
-            System.out.println(e);
+            System.out.println(e.toString());
         }
     }
 

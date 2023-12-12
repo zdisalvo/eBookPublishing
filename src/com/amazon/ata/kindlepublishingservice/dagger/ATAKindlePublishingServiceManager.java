@@ -24,7 +24,7 @@ public class ATAKindlePublishingServiceManager {
      * @param bookPublisher handles asynchronous publishing of books
      */
     @Inject
-    ATAKindlePublishingServiceManager(BookPublisher bookPublisher) {
+ATAKindlePublishingServiceManager(BookPublisher bookPublisher) {
         this.bookPublisher = bookPublisher;
     }
 

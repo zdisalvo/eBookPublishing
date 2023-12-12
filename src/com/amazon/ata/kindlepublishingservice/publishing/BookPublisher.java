@@ -19,7 +19,10 @@ public class BookPublisher {
     private static final Logger log = LogManager.getLogger(BookPublisher.class);
 
     private final ScheduledExecutorService scheduledExecutorService;
+
+    //TODO
     private final Runnable publishTask;
+//private final BookPublishTask publishTask;
     private boolean isRunning;
 
     /**
